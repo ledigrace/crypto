@@ -1,0 +1,15 @@
+.c-box{
+    background-color: #E0DBDB;
+    padding: 10px 50px;
+    margin: 0 150px;
+}
+.c-row{
+    margin: 0 150px;
+}
+.crypto-pic{
+    padding: 15px;
+}
+.crypto-info{
+    border: 1px solid #fff;
+    padding: 15px;
+}

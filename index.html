@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="c-box mt-5">
+                <div class="search">
+                    <input type="text" placeholder="Search" class="w-100" id="search-input">
+                </div>
+                <div class="crypto-data" id="crypto-data-container">
+                </div>
+                <div id="loading-indicator" class="text-center mt-3" style="display: none;">
+                    <h5>Loading...</h5>
+                </div>
+                <div id="end-notification" class="text-center mt-3" style="display: none;">
+                    <h5>No more records to show.</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let page = 1;
+    let loading = false;
+    let endOfRecords = false;
+    let searchQuery = '';
+    const searchInput = document.getElementById('search-input');
+    const cryptoDataContainer = document.getElementById('crypto-data-container');
+
+    const loadData = async () => {
+        if (loading || endOfRecords) return;
+
+        loading = true;
+        document.getElementById("loading-indicator").style.display = "block";
+
+        try {
+            let url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=4&page=${page}`;
+
+            if (searchQuery) {
+                url += `&ids=${searchQuery}`;
+            }
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.length > 0) {
+                data.forEach(crypto => {
+                    const cryptoRow = document.createElement("div");
+                    cryptoRow.className = "row mt-3";
+
+                    const cryptoPic = document.createElement("div");
+                    cryptoPic.className = "col-md-4 mt-3 crypto-pic";
+                    cryptoPic.innerHTML = `<img src="crypto.png" alt="Crypto Image">`;
+                    cryptoRow.appendChild(cryptoPic);
+
+                    const cryptoInfo = document.createElement("div");
+                    cryptoInfo.className = "col-md-8 mt-3 crypto-info";
+                    cryptoInfo.innerHTML = `
+                        <h3>Rate: ${crypto.current_price}</h3>
+                        <p>Crypto name: ${crypto.name}</p>
+                        <p>Crypto Unit: ${crypto.symbol}</p>
+                    `;
+                    cryptoRow.appendChild(cryptoInfo);
+
+                    cryptoDataContainer.appendChild(cryptoRow);
+                });
+
+                page++;
+            } else {
+                endOfRecords = true;
+                document.getElementById("end-notification").style.display = "block";
+            }
+        } catch (error) {
+            console.log("Error:", error);
+        }
+
+        loading = false;
+        document.getElementById("loading-indicator").style.display = "none";
+    };
+
+    const lazyLoadData = () => {
+        const scrollOffset = window.innerHeight + window.scrollY;
+        const cryptoDataContainerHeight = cryptoDataContainer.offsetHeight;
+        if (scrollOffset >= cryptoDataContainerHeight) {
+            loadData();
+        }
+    };
+
+    const searchCrypto = () => {
+        searchQuery = searchInput.value.toLowerCase();
+        cryptoDataContainer.innerHTML = '';
+        page = 1;
+        endOfRecords = false;
+        document.getElementById("end-notification").style.display = "none";
+        loadData();
+    };
+
+    window.addEventListener('scroll', lazyLoadData);
+    searchInput.addEventListener('input', searchCrypto);
+
+    // Initial data load
+    loadData();
+</script>
+</body>
+</html>
